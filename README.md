@@ -1,4 +1,4 @@
-##Convolutional Sparse Auto-Encoders
+## Convolutional Sparse Auto-Encoders
 
 We train a convolutional variation of sparse auto-encoders on the activations of AlexNet. This architecture should be able to ~localize the prescence of features in an image (?).
 
