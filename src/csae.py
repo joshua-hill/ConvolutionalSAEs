@@ -3,20 +3,19 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils import weight_norm
 
-#comment
 class CSAE(nn.Module):
     def __init__(self, in_channels, dict_size, kernel_size=1, stride=1, padding=0):
         super(CSAE, self).__init__()
         
-        self.encoder = nn.Conv2d(in_channels, dict_size, kernel_size, stride, padding, bias=False)
-        self.decoder = weight_norm(nn.Conv2d(dict_size, in_channels, kernel_size, stride, padding, bias=False))
+        self.encoder = nn.Conv2d(in_channels, dict_size, kernel_size, stride, padding, bias=True)
+        self.decoder = weight_norm(nn.Conv2d(dict_size, in_channels, kernel_size, stride, padding, bias=True))
         
         # Initialize weights
         nn.init.xavier_uniform_(self.encoder.weight)
         nn.init.xavier_uniform_(self.decoder.weight.data)
 
     def encode(self, x):
-        return self.encoder(x)
+        return F.relu(self.encoder(x))
 
     def decode(self, z):
         return self.decoder(z)
@@ -50,4 +49,5 @@ def test_csae():
     assert z.shape[1] == 128, "Encoded shape doesn't match the specified dictionary size"
     
     print("CSAE test passed successfully!")
+
 

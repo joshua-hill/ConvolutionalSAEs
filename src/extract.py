@@ -3,8 +3,8 @@ import h5py
 import torchvision
 from torchvision import transforms
 from torch.utils.data import DataLoader, Dataset
-from datasets import load_dataset
 from tqdm import tqdm
+#from datasets import load_dataset
 
 
 class ActivationExtractor:
@@ -17,7 +17,7 @@ class ActivationExtractor:
     def _register_hooks(self):
         def hook_fn(layer_name):
             def forward_hook(module, input, output):
-                self.activations[layer_name].append(output.detach().cpu())
+                self.activations[layer_name].append(output.detach())
             return forward_hook
 
         for name, module in self.model.named_modules():
@@ -30,7 +30,8 @@ class ActivationExtractor:
 
     def get_activations(self):
         return {layer: torch.cat(acts, dim=0) for layer, acts in self.activations.items()}
-    
+
+
 class HDF5ActivationsDataset(Dataset):
     def __init__(self, h5_file, data_key, transform=None):
         self.h5_file = h5py.File(h5_file, 'r')
@@ -47,13 +48,13 @@ class HDF5ActivationsDataset(Dataset):
             x = self.transform(x)
 
         return torch.tensor(x, dtype=torch.float32)
-    
+
 def load_alexnet():
     model = torchvision.models.alexnet(weights='AlexNet_Weights.DEFAULT')
     model.eval()
     return model
 
-def create_image_dataloader(batch_size=64, root='path/to/imagenet'):
+def create_image_dataloader(batch_size=64, root='/home/creager_lab/imagenet'):
     transform = transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
@@ -62,22 +63,26 @@ def create_image_dataloader(batch_size=64, root='path/to/imagenet'):
     ])
     dataset = torchvision.datasets.ImageFolder(root=root, transform=transform)
     return DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-    
+
+
 def create_activations_dataloader_from_h5(batch_size=64, root='alexnet_activations.h5', data_key='features.2'):
     dataset = HDF5ActivationsDataset(h5_file=root, data_key=data_key)
     return DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
 
-def extract_activations(model, dataloader, output_file):
+    
+
+def extract_activations(model, dataloader, output_file='activations.h5'):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
     target_layers = [
-        'features.0',  # Conv1
-        'features.3',  # Conv2
-        'features.6',  # Conv3
-        'features.8',  # Conv4
-        'features.10'  # Conv5
+        'features.2',  # Conv1
+        'features.5',  # Conv2
+        'features.7',  # Conv3
+        'features.9',  # Conv4
+        'features.12',  # Conv5
+        #'avgpool',  # AvgPool
     ]
 
     extractor = ActivationExtractor(model, target_layers)
@@ -106,3 +111,8 @@ def save_activations(activations, output_file):
             else:
                 max_shape = (None,) + activation_np.shape[1:]  # None makes the first dimension resizable
                 f.create_dataset(layer_name, data=activation_np, maxshape=max_shape, chunks=True)
+
+if __name__ == '__main__':
+    dataloader = create_image_dataloader(batch_size=64)
+    model = load_alexnet()
+    activations = extract_activations(model, dataloader, 'activations_features.h5')

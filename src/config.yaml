@@ -1,0 +1,21 @@
+training:
+  curriculum:
+    learning_rate: 
+      start: 0.00005
+      end: 0.0001
+      interval: 100
+      increment: 0.00001
+    sparsity_penalty:
+      start: 0.0
+      end: 5.0
+      interval: 100
+      increment: 0.1
+  save_every_step: 100
+  keep_every_steps: 100
+  test_run: False
+out_dir: c-sae/output/c-sae_test
+target_layer: features.2
+dict_scale_factor: 4.0
+wandb:
+  log_every_steps: 100
+name: c-sae_test
