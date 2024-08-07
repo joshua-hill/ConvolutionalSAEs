@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils import weight_norm
 
+#comment
 class CSAE(nn.Module):
     def __init__(self, in_channels, dict_size, kernel_size=1, stride=1, padding=0):
         super(CSAE, self).__init__()
@@ -49,3 +50,4 @@ def test_csae():
     assert z.shape[1] == 128, "Encoded shape doesn't match the specified dictionary size"
     
     print("CSAE test passed successfully!")
+
