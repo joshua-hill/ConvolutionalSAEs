@@ -68,7 +68,7 @@ def create_activations_dataloader_from_h5(batch_size=64, root='alexnet_activatio
     return DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
 
-def extract_activations(model, dataloader, num_batches=100):
+def extract_activations(model, dataloader, output_file):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
