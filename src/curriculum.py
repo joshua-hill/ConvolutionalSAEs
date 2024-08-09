@@ -15,7 +15,7 @@ class Curriculum:
         #decrease LR linearly for last 20% of steps
         if self.step_count >= 0.8 * self.total_iterations:
             #print(f'lr before at step {self.step_count}: {self.learning_rate}') 
-            decrement = self.learning_rate / (0.2 * self.total_iterations)
+            decrement = -(self.learning_rate / (0.2 * self.total_iterations))
             self.learning_rate = self.update_var_interpolate(
                 self.learning_rate, self.learning_rate_schedule, decrement, decrease=True
             )
