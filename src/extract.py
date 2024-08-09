@@ -111,8 +111,3 @@ def save_activations(activations, output_file):
             else:
                 max_shape = (None,) + activation_np.shape[1:]  # None makes the first dimension resizable
                 f.create_dataset(layer_name, data=activation_np, maxshape=max_shape, chunks=True)
-
-if __name__ == '__main__':
-    dataloader = create_image_dataloader(batch_size=64)
-    model = load_alexnet()
-    activations = extract_activations(model, dataloader, 'activations_features.h5')

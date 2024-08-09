@@ -1,18 +1,22 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn.utils import weight_norm
+
 
 class CSAE(nn.Module):
     def __init__(self, in_channels, dict_size, kernel_size=1, stride=1, padding=0):
         super(CSAE, self).__init__()
         
         self.encoder = nn.Conv2d(in_channels, dict_size, kernel_size, stride, padding, bias=True)
-        self.decoder = weight_norm(nn.Conv2d(dict_size, in_channels, kernel_size, stride, padding, bias=True))
+        nn.init.constant_(self.encoder.bias, 0)
+        self.decoder = nn.Conv2d(dict_size, in_channels, kernel_size, stride, padding, bias=True)
+        nn.init.constant_(self.decoder.bias, 0)
         
         # Initialize weights
-        nn.init.xavier_uniform_(self.encoder.weight)
-        nn.init.xavier_uniform_(self.decoder.weight.data)
+        nn.init.xavier_uniform_(self.decoder.weight)
+
+        # Make the encoder weights the transpose of the decoder weights - as per Anthropic's suggestion
+        self.encoder.weight.data = self.decoder.weight.data.transpose(0, 1)
 
     def encode(self, x):
         return F.relu(self.encoder(x))

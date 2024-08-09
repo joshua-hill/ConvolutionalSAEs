@@ -8,20 +8,23 @@ from extract import load_alexnet, ActivationExtractor, create_image_dataloader
 from curriculum import Curriculum
 import yaml
 import argparse
+import wandb
 
 
 
-def loss_function(x_recon, x, z, alpha=1.0):
-    return F.mse_loss(x_recon, x) + alpha * (torch.norm(z, p=1))
+def loss_function(x_recon, x, z, decoder_tensor, alpha=1.0):
+    #print(f'size of decoder: {decoder_tensor.shape}')
+    #print(f'size of z: {z.shape}')
+    #print(f'size of decoder_norm: {(torch.norm(decoder_tensor, dim=0, keepdim=True).expand_as(z)).shape}')
+    return F.mse_loss(x_recon, x) + alpha * (((torch.norm(decoder_tensor, dim=0, keepdim=True).expand_as(z)) * torch.abs(z)).mean())
 
 
 def train_step_csae(model, activations, optimizer, loss_func, sparsity_penalty):
     optimizer.zero_grad()
     x_recon, hidden_state = model.forward(activations)
-    loss = loss_func(x_recon, activations, hidden_state, sparsity_penalty)
+    loss = loss_func(x_recon, activations, hidden_state, model.decoder.weight, sparsity_penalty)
     loss.backward()
     optimizer.step()
-    #clear activations?
     return loss.detach().item(), x_recon.detach()
 
 
@@ -29,7 +32,7 @@ def train_csae(model, args, wandb_run=None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
 
-    dataloader = create_image_dataloader(batch_size=64)
+    dataloader = create_image_dataloader(batch_size=512)
     total_iterations = len(dataloader)
 
     curriculum = Curriculum(args['training']['curriculum'], total_iterations)
@@ -54,8 +57,6 @@ def train_csae(model, args, wandb_run=None):
     pbar = tqdm(enumerate(dataloader))
 
     for i, (inputs, _) in pbar:
-        if i>= 1000:
-            break
 
         inputs = inputs.to(device)
         with torch.no_grad():
@@ -92,6 +93,8 @@ def train_csae(model, args, wandb_run=None):
             and i > 0
         ):
             torch.save(model.state_dict(), os.path.join(args['out_dir'], f"model_{i}.pt"))
+    #save after final iteration
+    torch.save(model.state_dict(), os.path.join(args['out_dir'], f"model_{i}.pt"))
 
 
 if __name__ == "__main__":
@@ -103,6 +106,10 @@ if __name__ == "__main__":
 
     with open(cmd_args.config, 'r') as f:
         config = yaml.safe_load(f)
+
+    wandb.login(key='a57325dff13478a3c53d373211005c6d56047140')
+    
+    wandb.init(project="C-SAE", config=config, name='C-SAE_Feature_2_Test')
 
     target_layers = [
         'features.2',  
@@ -127,7 +134,7 @@ if __name__ == "__main__":
 
     model = CSAE(
         in_channels=target_sizes[config['target_layer']][0],
-        dict_size=128,
+        dict_size=256,
     )
 
     # Ensure the output directory exists
@@ -135,5 +142,5 @@ if __name__ == "__main__":
     with open(config['out_dir'] + "/config.yaml", "w") as yaml_file:
         yaml.dump(config, yaml_file, default_flow_style=False)
 
-    train_csae(model, config, wandb_run=None)
+    train_csae(model, config, wandb_run=wandb)
 
