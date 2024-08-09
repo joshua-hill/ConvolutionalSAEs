@@ -17,7 +17,7 @@ training:
   test_run: False
 out_dir: c-sae/output/c-sae_test
 target_layer: features.2
-dict_scale_factor: 4.0
 wandb:
   log_every_steps: 10
 name: c-sae_test
+dict_factor: 16.0

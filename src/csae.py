@@ -36,22 +36,6 @@ class CSAEFactory:
         dict_size = in_channels * dict_factor
         return CSAE(in_channels, dict_size)
 
-def test_csae():
-    # Test the CSAE
-    batch_size, in_channels, height, width = 32, 64, 56, 56
-    x = torch.randn(batch_size, in_channels, height, width)
-    
-    csae = CSAE(in_channels, dict_size=128)
-    x_recon, z = csae(x)
-    
-    print(f"Input shape: {x.shape}")
-    print(f"Encoded shape: {z.shape}")
-    print(f"Reconstructed shape: {x_recon.shape}")
-    
-    # Check if shapes match
-    assert x.shape == x_recon.shape, "Input and reconstruction shapes don't match"
-    assert z.shape[1] == 128, "Encoded shape doesn't match the specified dictionary size"
-    
-    print("CSAE test passed successfully!")
+
 
 

@@ -119,7 +119,7 @@ if __name__ == "__main__":
         'features.12'
     ]
 
-    assert config['target_layer'] in target_layers
+    assert config['target_layer'] in target_layers, "Invalid target layer"
 
     #size of activations
     target_sizes = {
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
     model = CSAE(
         in_channels=target_sizes[config['target_layer']][0],
-        dict_size=256,
+        dict_size=target_sizes[config['target_layer']][0] * config['dict_factor'],
     )
 
     # Ensure the output directory exists
