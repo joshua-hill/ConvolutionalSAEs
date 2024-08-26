@@ -7,6 +7,7 @@ class CSAE(nn.Module):
     def __init__(self, in_channels, dict_size, kernel_size=1, stride=1, padding=0):
         super(CSAE, self).__init__()
         
+        #print(f'Creating CSAE with in_channels: {in_channels}, dict_size: {dict_size}, kernel_size: {kernel_size}, stride: {stride}, padding: {padding}')
         self.encoder = nn.Conv2d(in_channels, dict_size, kernel_size, stride, padding, bias=True)
         nn.init.constant_(self.encoder.bias, 0)
         self.decoder = nn.Conv2d(dict_size, in_channels, kernel_size, stride, padding, bias=True)

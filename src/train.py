@@ -109,7 +109,7 @@ if __name__ == "__main__":
 
     wandb.login(key='a57325dff13478a3c53d373211005c6d56047140')
     
-    wandb.init(project="C-SAE", config=config, name='C-SAE_Feature_2_Test')
+    wandb.init(project="C-SAE", config=config, name='C-SAE_Feature_2_updated')
 
     target_layers = [
         'features.2',  

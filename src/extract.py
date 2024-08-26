@@ -65,13 +65,12 @@ def create_image_dataloader(batch_size=64, root='/home/creager_lab/imagenet'):
     return DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
 
+#not using this due to memory constraints
 def create_activations_dataloader_from_h5(batch_size=64, root='alexnet_activations.h5', data_key='features.2'):
     dataset = HDF5ActivationsDataset(h5_file=root, data_key=data_key)
     return DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
-
-    
-
+#again, not using this due to memory constraints
 def extract_activations(model, dataloader, output_file='activations.h5'):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
